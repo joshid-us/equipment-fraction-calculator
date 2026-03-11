@@ -1,0 +1,90 @@
+"""
+ENGR 103 - Homework 2, Part 2
+Equipment Fraction Calculation
+
+This program:
+1) Collects scrap percentages for 3 processing steps and the required good output after step 3 (O3).
+2) Computes the required input before step 1 (I1).
+3) Collects equipment fraction factors (S, H, E, R) and computes the required number of machines (F).
+4) Prints:
+   - F with 2 decimal places
+   - F rounded up to the next whole machine
+"""
+
+import math
+
+
+def get_float(prompt: str) -> float:
+    """Get a float from the user with a friendly re-prompt if input is invalid."""
+    while True:
+        raw = input(prompt).strip()
+        try:
+            return float(raw)
+        except ValueError:
+            print("  Please enter a valid number (example: 12.5).")
+
+
+def get_percent(prompt: str) -> float:
+    """
+    Get a percentage from the user and convert it to a decimal.
+    Example: 5 (%) -> 0.05
+    """
+    while True:
+        p = get_float(prompt)
+        if 0 <= p < 100:
+            return p / 100.0
+        print("  Percent must be in the range 0 to < 100.")
+
+
+def main() -> None:
+    print("\n=== Equipment Fraction Calculator (HW2 Part 2) ===")
+    print("We will enter scrap rates for 3 steps and your required good output after step 3.\n")
+
+    # Scrap rates (entered as percentages, stored as decimals)
+    d1 = get_percent("Enter scrap percentage for Step 1 (example 5 for 5%): ")
+    d2 = get_percent("Enter scrap percentage for Step 2 (example 5 for 5%): ")
+    d3 = get_percent("Enter scrap percentage for Step 3 (example 5 for 5%): ")
+
+    # Required good output after step 3
+    o3 = get_float("\nEnter the required good output after Step 3 (O3): ")
+
+    # Compute I1
+    yield_total = (1 - d1) * (1 - d2) * (1 - d3)
+
+    # Guard against impossible yields (e.g., 100% scrap somewhere)
+    if yield_total <= 0:
+        print("\nYour scrap rates imply zero usable output (total yield is 0).")
+        print("Please re-run the program and enter realistic scrap rates.\n")
+        return
+
+    i1 = o3 / yield_total  # Q = I1 in the equipment fraction equation
+
+    print("\n--- Step A Result ---")
+    print(f"Total yield across 3 steps = {yield_total:.6f}")
+    print(f"Required input before Step 1 (I1) = {i1:.6f}\n")
+
+    print("Now we will compute required machines using the Equipment Fraction inputs.")
+    print("Please enter the following factors:\n")
+
+    # Equipment fraction factors
+    s = get_float("S = standard time per unit (time/unit): ")
+    h = get_float("H = time available per machine (time): ")
+    e = get_float("E = efficiency (0 to 1 recommended, example 0.85): ")
+    r = get_float("R = reliability (0 to 1 recommended, example 0.90): ")
+
+    # Basic guards for division safety
+    if h == 0 or e == 0 or r == 0:
+        print("\nH, E, and R must be non-zero to compute machines required.")
+        print("Please re-run and enter valid values.\n")
+        return
+
+    q = i1
+    f = (s * q) / (e * h * r)
+
+    print("\n=== Final Answer ===")
+    print(f"Equipment fraction (F) = {f:.2f}")
+    print(f"Machines required (rounded up) = {math.ceil(f)}\n")
+
+
+if __name__ == "__main__":
+    main()
